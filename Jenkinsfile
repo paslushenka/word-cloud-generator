@@ -7,18 +7,20 @@ pipeline {
     }
     stages {
         stage('project_build') {
-            sh """
-                export PATH="\$PATH:${WORKSPACE}/bin"
-                sed -i \'s/1.DEVELOPMENT/1.${BUILD_NUMBER}/g\' ./rice-box.go
-                make lint
-                make test
-                make clean
-                make build
-                md5sum artifacts/*/word-cloud-generator* >artifacts/word-cloud-generator.md5
-                gzip artifacts/*/word-cloud-generator*
-                chmod -R 777 /workspace
-            """
-            nexusArtifactUploader artifacts: [[artifactId: 'word-cloud-generator', classifier: '', file: 'artifacts/linux/word-cloud-generator.gz', type: 'gz']], credentialsId: 'nexus-creds', groupId: '1', nexusUrl: 'nexus:8081', nexusVersion: 'nexus3', protocol: 'http', repository: 'word-cloud-generator', version: '1.$BUILD_NUMBER'
+            steps {
+                sh """
+                    export PATH="\$PATH:${WORKSPACE}/bin"
+                    sed -i \'s/1.DEVELOPMENT/1.${BUILD_NUMBER}/g\' ./rice-box.go
+                    make lint
+                    make test
+                    make clean
+                    make build
+                    md5sum artifacts/*/word-cloud-generator* >artifacts/word-cloud-generator.md5
+                    gzip artifacts/*/word-cloud-generator*
+                    chmod -R 777 /workspace
+                """
+                nexusArtifactUploader artifacts: [[artifactId: 'word-cloud-generator', classifier: '', file: 'artifacts/linux/word-cloud-generator.gz', type: 'gz']], credentialsId: 'nexus-creds', groupId: '1', nexusUrl: 'nexus:8081', nexusVersion: 'nexus3', protocol: 'http', repository: 'word-cloud-generator', version: '1.$BUILD_NUMBER'
+            }
         }
         stage('project_test') {
             environment {
